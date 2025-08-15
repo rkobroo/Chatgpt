@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Video Downloader API</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Video Downloader API</h1>
+        <form id="videoForm">
+            <select id="platform" required>
+                <option value="">Select Platform</option>
+                <option value="tiktok">TikTok</option>
+                <option value="youtube">YouTube</option>
+                <option value="instagram">Instagram</option>
+                <option value="facebook">Facebook</option>
+            </select>
+            <input type="url" id="url" placeholder="Enter Video URL" required>
+            <button type="submit">Download Video</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('videoForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const platform = document.getElementById('platform').value;
+            const url = document.getElementById('url').value;
+            const resultDiv = document.getElementById('result');
+
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ platform, url }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <h2>${data.title}</h2>
+                        <img src="${data.thumbnailUrl}" alt="${data.title} Thumbnail" style="max-width: 100%; height: auto;">
+                        <p><strong>Author:</strong> ${data.author}</p>
+                        <p><strong>Duration:</strong> ${data.duration}</p>
+                        <p><strong>Description:</strong> ${data.description || "No description available"}</p>
+                        <h3>Download Link:</h3>
+                        <a href="${data.videoUrl}" download="${data.title}.mp4">Click here to download</a>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<h2>Error: ${data.error}</h2>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<h2>Error: ${error.message}</h2>`;
+            }
+        });
+    </script>
+</body>
+</html>
